@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">MovieApp</string>
+    <string name="action_sort_popular">Sort By Most Popular</string>
+    <string name="action_sort_rate">Sort By Highest Rate</string>
+    <string name="pref_sort_criteria_key" translatable="false">criteria</string>
+    <string name="pref_sort_criteria_default" translatable="false">popular</string>
+    <string name="pref_sort_popular" translatable="false">popularity.desc</string>
+    <string name="pref_sort_rate" translatable="false">vote_average.desc</string>
+    <string name="movies_api_key">07e0dd73aa178cc865e1b454a0cb354d</string>
+</resources>
