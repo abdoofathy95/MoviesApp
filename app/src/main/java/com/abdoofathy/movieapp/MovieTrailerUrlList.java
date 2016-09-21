@@ -10,9 +10,6 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-/**
- * Created by Awesome on 8/12/2016.
- */
 public class MovieTrailerUrlList implements IOnDataReady, IJSONParser {
     private Context context;
     private List<MovieTrailerUrl> trailersUrls ;

@@ -13,7 +13,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         MovieDetailFragment movieDetailFragment =  new MovieDetailFragment();
         movieDetailFragment.setArguments(intent.getExtras());
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.movieDetail, movieDetailFragment)
+                .replace(R.id.movieDetail, movieDetailFragment)
                 .commit();
     }
 }

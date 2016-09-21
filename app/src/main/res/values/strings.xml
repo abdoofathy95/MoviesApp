@@ -7,4 +7,16 @@
     <string name="pref_sort_popular" translatable="false">popularity.desc</string>
     <string name="pref_sort_rate" translatable="false">vote_average.desc</string>
     <string name="movies_api_key">07e0dd73aa178cc865e1b454a0cb354d</string>
+    <string name="add_to_fav">Add To My Favourites</string>
+    <string name="added_to_fav">Added</string>
+    <string name="show_favourites">Fav.</string>
+    <string name="reviews">Reviews</string>
+    <string name="trailers">Trailers</string>
+    <string name="author">Author</string>
+    <string name="content">Content</string>
+    <string name="emptyFav">No Favourite Movies Found</string>
+    <string name="title_activity_favourite_movies">FavouriteMovies</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

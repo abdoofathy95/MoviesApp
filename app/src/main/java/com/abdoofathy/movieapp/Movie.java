@@ -13,7 +13,18 @@ public class Movie implements IJSONParser{
     private String runtime;
     private final String BASE_IMAGE_URL = "http://image.tmdb.org/t/p/w185/";
 
+    public Movie(){
 
+    }
+
+    public Movie(String movieId, String movieTitle, String posterImageURL, String plot, double voteAverage, String releaseDate){
+        this.movieId = movieId;
+        this.movieTitle = movieTitle;
+        this.posterImageURL = posterImageURL;
+        this.plot = plot;
+        this.voteAverage = voteAverage;
+        this.releaseDate = releaseDate;
+    }
     public String getMovieId() {
         return movieId;
     }

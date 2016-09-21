@@ -27,36 +27,41 @@ public class MainActivity extends AppCompatActivity {
     private ImageAdapter imageAdapter;
     private List<Movie> movies;
     private Context context;
+    private boolean isTablet;
+    private GridView moviesPostersGridView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // check database for movies
+        isTablet = getResources().getBoolean(R.bool.isTablet);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String sortCriteria = prefs.getString(getString(R.string.pref_sort_criteria_key),getString(R.string.pref_sort_criteria_default));
-        movies = new ArrayList<Movie>();
-        GridView moviesPostersGridView = (GridView) findViewById(R.id.postersGridView);
+
+        movies = new ArrayList<>(); // data model
+        moviesPostersGridView = (GridView) findViewById(R.id.postersGridView);
         imageAdapter = new ImageAdapter(this, movies);
         moviesPostersGridView.setAdapter(imageAdapter);
         context = this;
+
         moviesPostersGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // open an explicit intent (Movie Detail Activity) and send data with it'
-                Intent detailIntent = new Intent(context, MovieDetailActivity.class);
-                Movie movie = (Movie)adapterView.getItemAtPosition(i);
+                Movie movie = (Movie) adapterView.getItemAtPosition(i);
 
-                detailIntent.putExtra(Constants.MOVIE_ID, movie.getMovieId());
-                detailIntent.putExtra(Constants.MOVIE_TITLE, movie.getMovieTitle());
-                detailIntent.putExtra(Constants.MOVIE_POST_URL, movie.getPosterImageURL());
-                detailIntent.putExtra(Constants.MOVIE_PLOT, movie.getPlot());
-                detailIntent.putExtra(Constants.MOVIE_VOTE_AVERAGE, movie.getVoteAverage());
-                detailIntent.putExtra(Constants.MOVIE_RELEASE_DATE, movie.getReleaseDate());
+                if(isTablet){ // check if two pane is to be applied
+                    moviesPostersGridView.smoothScrollToPositionFromTop(i,0);
+                    openMovieInFragment(movie);
+                }else {
 
-                startActivity(detailIntent);
+                    // open an explicit intent (Movie Detail Activity) and send data with it'
+                    openMovieInActivity(movie);
+                }
             }
         });
-        IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies);
+
+        IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies, moviesPostersGridView, isTablet);
         // build URI (get by popularity first) as it's the default
         apiUrl = getUrl(sortCriteria);
 
@@ -83,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             prefs.edit().putString(getString(R.string.pref_sort_criteria_key),getString(R.string.pref_sort_popular))
                     .apply();
             apiUrl = getUrl(getString(R.string.pref_sort_popular));
-            IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies);
+            IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies, moviesPostersGridView, isTablet);
             DoAPICall apiCall = new DoAPICall(moviesList);
             executeApiCall(apiCall);
             return true;
@@ -96,9 +101,17 @@ public class MainActivity extends AppCompatActivity {
             prefs.edit().putString(getString(R.string.pref_sort_criteria_key),getString(R.string.pref_sort_rate))
                     .apply();
             apiUrl = getUrl(getString(R.string.pref_sort_rate));
-            IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies);
+            IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies, moviesPostersGridView, isTablet);
             DoAPICall apiCall = new DoAPICall(moviesList);
             executeApiCall(apiCall);
+            return true;
+        }
+
+        if (itemId == R.id.action_show_favourites){
+            // show favourite movies
+            // start new intent that runs the favs activity
+            Intent favouriteMoviesIntent = new Intent(this, FavouriteMovies.class);
+            startActivity(favouriteMoviesIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -145,5 +158,35 @@ public class MainActivity extends AppCompatActivity {
         {
             return false;
         }
+    }
+
+    private void openMovieInFragment(Movie movie){
+        MovieDetailFragment movieDetailFragment =  new MovieDetailFragment();
+        Bundle arguements = new Bundle();
+
+        arguements.putString(Constants.MOVIE_ID, movie.getMovieId());
+        arguements.putString(Constants.MOVIE_TITLE, movie.getMovieTitle());
+        arguements.putString(Constants.MOVIE_POST_URL, movie.getPosterImageURL());
+        arguements.putString(Constants.MOVIE_PLOT, movie.getPlot());
+        arguements.putDouble(Constants.MOVIE_VOTE_AVERAGE, movie.getVoteAverage());
+        arguements.putString(Constants.MOVIE_RELEASE_DATE, movie.getReleaseDate());
+
+        movieDetailFragment.setArguments(arguements);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.movieDetail, movieDetailFragment)
+                .commit();
+    }
+
+    private void openMovieInActivity(Movie movie){
+        Intent detailIntent = new Intent(context, MovieDetailActivity.class);
+
+        detailIntent.putExtra(Constants.MOVIE_ID, movie.getMovieId());
+        detailIntent.putExtra(Constants.MOVIE_TITLE, movie.getMovieTitle());
+        detailIntent.putExtra(Constants.MOVIE_POST_URL, movie.getPosterImageURL());
+        detailIntent.putExtra(Constants.MOVIE_PLOT, movie.getPlot());
+        detailIntent.putExtra(Constants.MOVIE_VOTE_AVERAGE, movie.getVoteAverage());
+        detailIntent.putExtra(Constants.MOVIE_RELEASE_DATE, movie.getReleaseDate());
+
+        startActivity(detailIntent);
     }
 }

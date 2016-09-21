@@ -1,71 +1,42 @@
 package com.abdoofathy.movieapp;
 
 
-import android.content.Intent;
-import android.net.Uri;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+public class MovieDetailFragment extends Fragment implements IUpdateData {
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
-public class MovieDetailFragment extends Fragment {
-    private TrailerArrayAdapter trailersAdapter;
-    private ListView trailersListView;
-    private List<MovieTrailerUrl> trailersUrls ;
-    private MovieTrailerUrlList movieTrailerUrlList;
+    private MoviesDbHelper moviesDbHelper;
+    private boolean movieAlreadyAdded;
+    private Button addToFavBtn;
+    private TrailersFragment trailersFragment;
+    private ReviewsFragment reviewsFragment;
+    private Context context;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        trailersUrls = new ArrayList<MovieTrailerUrl>();
+        moviesDbHelper = new MoviesDbHelper(getContext());
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_movie_detail, container, false);
-        trailersAdapter = new TrailerArrayAdapter(getContext(), R.layout.trailer_item, trailersUrls);
-        movieTrailerUrlList = new MovieTrailerUrlList(getContext(), trailersAdapter, trailersUrls);
-
-        trailersListView = (ListView) view.findViewById(R.id.trailersListView);
-        trailersListView.setAdapter(trailersAdapter);
-        trailersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String url = ((MovieTrailerUrl)adapterView.getItemAtPosition(i)).getTrailerUrl();
-                Intent playVideoIntent = new Intent();
-                playVideoIntent.setAction(Intent.ACTION_VIEW);
-                playVideoIntent.setData(Uri.parse(url));
-                startActivity(playVideoIntent);
-            }
-        });
-
 
         Bundle data = getArguments();
-        String movieId = data.getString(Constants.MOVIE_ID);
-        String movieTitle = data.getString(Constants.MOVIE_TITLE);
-        String moviePostUrl = data.getString(Constants.MOVIE_POST_URL);
-        String moviePlot = data.getString(Constants.MOVIE_PLOT);
-        double voteAverage = data.getDouble(Constants.MOVIE_VOTE_AVERAGE);
-        String releaseDate = data.getString(Constants.MOVIE_RELEASE_DATE);
-
-        DoAPICall doAPICall = new DoAPICall(movieTrailerUrlList);
-        URL url = generateURL(movieId);
-        if(url != null){
-            doAPICall.execute(url);
-        }
+        final String movieId = data.getString(Constants.MOVIE_ID);
+        final String movieTitle = data.getString(Constants.MOVIE_TITLE);
+        final String moviePostUrl = data.getString(Constants.MOVIE_POST_URL);
+        final String moviePlot = data.getString(Constants.MOVIE_PLOT);
+        final double voteAverage = data.getDouble(Constants.MOVIE_VOTE_AVERAGE);
+        final String releaseDate = data.getString(Constants.MOVIE_RELEASE_DATE);
 
         TextView movieTitleTv = (TextView) view.findViewById(R.id.movieTitle);
         movieTitleTv.setText(movieTitle);
@@ -82,26 +53,89 @@ public class MovieDetailFragment extends Fragment {
         TextView movieReleaseDateTv = (TextView) view.findViewById(R.id.releaseDate);
         movieReleaseDateTv.setText(releaseDate+"");
 
+        addToFavBtn = (Button) view.findViewById(R.id.addToFavBtn);
+        Button trailersBtn = (Button) view.findViewById(R.id.trailersBtn);
+        Button reviewsBtn = (Button) view.findViewById(R.id.reviewsBtn);
+
+        if (moviesDbHelper.isAddedToFavourites(movieId)){
+            addToFavBtn.setSelected(true);
+            addToFavBtn.setText(R.string.added_to_fav);
+            movieAlreadyAdded = true;
+        }else{
+            addToFavBtn.setSelected(false);
+            addToFavBtn.setText(R.string.add_to_fav);
+            movieAlreadyAdded = false;
+        }
+        addToFavBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // check if the movie already exists in favs and add
+                if ( movieAlreadyAdded ){
+                    moviesDbHelper.removeFromFavourites(movieId);
+                    addToFavBtn.setSelected(false);
+                    addToFavBtn.setText(R.string.add_to_fav);
+                    movieAlreadyAdded = false;
+                    if(context != null)
+                        ((IUpdateData) context).updateList(null);
+                }else{
+                    moviesDbHelper.addToFavourites(movieId, movieTitle, moviePostUrl, moviePlot, voteAverage, releaseDate);
+                    addToFavBtn.setSelected(true);
+                    addToFavBtn.setText(R.string.added_to_fav);
+                    movieAlreadyAdded = true;
+                    if(context != null)
+                        ((IUpdateData) context).updateList(null);
+                }
+            }
+        });
+
+        trailersBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                trailersFragment = new TrailersFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString(Constants.MOVIE_ID, movieId);
+                trailersFragment.setArguments(bundle);
+                getFragmentManager().beginTransaction().
+                        replace(R.id.movieDetail, trailersFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
+        reviewsBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                reviewsFragment = new ReviewsFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString(Constants.MOVIE_ID, movieId);
+                reviewsFragment.setArguments(bundle);
+                getFragmentManager().beginTransaction().
+                        replace(R.id.movieDetail, reviewsFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
         return view;
     }
 
-    private URL generateURL(String movieId){
-        Uri.Builder uriBuilder = new Uri.Builder();
-        uriBuilder.scheme("https")
-                .authority("api.themoviedb.org")
-                .appendPath("3")
-                .appendPath("movie")
-                .appendPath(movieId)
-                .appendPath("videos")
-                .appendQueryParameter("api_key",getString(R.string.movies_api_key));
-        String urlString = uriBuilder.build().toString();
-        try {
-            URL url = new URL(urlString);
-            return url;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+    @Override
+    public void onResume() {
+        super.onResume();
+        String movieId = getArguments().getString(Constants.MOVIE_ID);
+        if (moviesDbHelper.isAddedToFavourites(movieId)){
+            addToFavBtn.setSelected(true);
+            addToFavBtn.setText(R.string.added_to_fav);
+            movieAlreadyAdded = true;
+        }else{
+            addToFavBtn.setSelected(false);
+            addToFavBtn.setText(R.string.add_to_fav);
+            movieAlreadyAdded = false;
         }
-        return null;
     }
 
+    @Override
+    public void updateList(Context context) {
+        this.context = context;
+    }
 }

@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.abdoofathy.movieapp.MainActivity">
+    tools:context="com.abdoofathy.movieapp.FavouriteMovies">
     <GridView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/postersGridView"
+        android:id="@+id/favPostersGridView"
         android:numColumns="3"
         android:gravity="center"
         android:verticalSpacing="0dp"
@@ -16,4 +16,8 @@
 
     </GridView>
 
+    <TextView android:id="@+id/emptyFav"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/emptyFav" />
 </RelativeLayout>

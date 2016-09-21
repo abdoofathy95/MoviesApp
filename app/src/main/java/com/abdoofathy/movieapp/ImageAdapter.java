@@ -19,6 +19,9 @@ public class ImageAdapter extends BaseAdapter {
         this.moviesList = moviesList;
     }
 
+    public void updateData(List<Movie> list){
+        moviesList = list;
+    }
 
     @Override
     public int getCount() {

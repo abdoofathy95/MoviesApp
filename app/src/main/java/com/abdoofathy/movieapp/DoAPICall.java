@@ -19,7 +19,7 @@ public class DoAPICall extends AsyncTask<URL,Integer,String>{
     @Override
     protected String doInBackground(URL... urls){
         BufferedReader reader;
-        String jsonString = null;
+        String jsonString;
         // Open Connection To API
         try {
             HttpURLConnection urlConnection = (HttpURLConnection) urls[0].openConnection();
@@ -51,7 +51,10 @@ public class DoAPICall extends AsyncTask<URL,Integer,String>{
 
     @Override
     protected void onPostExecute(String jsonString) {
-        if(jsonString.contains("Exception")){ // something went wrong with connection
+        if(jsonString == null) {
+            data.raiseError("No Internet Connection Found"); // thus jsonString sent is null
+        }
+        else if(jsonString.contains("Exception")){ // something went wrong with connection
             data.raiseError(jsonString);
         }else {
             data.getData(jsonString);
