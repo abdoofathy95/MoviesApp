@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                 .appendPath("discover")
                 .appendPath("movie")
                 .appendQueryParameter("sort_by",sortCriteria)
-                .appendQueryParameter("api_key",getString(R.string.movies_api_key));
+                .appendQueryParameter("api_key",BuildConfig.MOVIES_API_KEY);
 
         URL apiUrl = null;
         try {

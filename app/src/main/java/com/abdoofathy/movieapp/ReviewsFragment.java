@@ -45,7 +45,7 @@ public class ReviewsFragment extends Fragment {
                 .appendPath("movie")
                 .appendPath(movieId)
                 .appendPath("reviews")
-                .appendQueryParameter("api_key",getString(R.string.movies_api_key));
+                .appendQueryParameter("api_key", BuildConfig.MOVIES_API_KEY);
         String urlString = uriBuilder.build().toString();
         try {
             return new URL(urlString);

@@ -55,7 +55,7 @@ public class TrailersFragment extends Fragment {
                 .appendPath("movie")
                 .appendPath(movieId)
                 .appendPath("videos")
-                .appendQueryParameter("api_key",getString(R.string.movies_api_key));
+                .appendQueryParameter("api_key",BuildConfig.MOVIES_API_KEY);
         String urlString = uriBuilder.build().toString();
         try {
             return new URL(urlString);
