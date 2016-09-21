@@ -1,6 +1,7 @@
 package com.abdoofathy.movieapp;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.GridView;
 import android.widget.Toast;
 

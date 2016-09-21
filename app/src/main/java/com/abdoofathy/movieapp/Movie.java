@@ -1,9 +1,12 @@
 package com.abdoofathy.movieapp;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Movie implements IJSONParser{
+public class Movie implements IJSONParser, Parcelable{
     private String movieId;
     private String movieTitle;
     private String posterImageURL;
@@ -13,9 +16,7 @@ public class Movie implements IJSONParser{
     private String runtime;
     private final String BASE_IMAGE_URL = "http://image.tmdb.org/t/p/w185/";
 
-    public Movie(){
-
-    }
+    public Movie(){}
 
     public Movie(String movieId, String movieTitle, String posterImageURL, String plot, double voteAverage, String releaseDate){
         this.movieId = movieId;
@@ -96,4 +97,39 @@ public class Movie implements IJSONParser{
             e.printStackTrace();
         }
     }
+
+    public Movie(Parcel in){
+        String [] data = new String [6];
+        in.readStringArray(data);
+
+        this.movieId = data[0];
+        this.movieTitle = data[1];
+        this.posterImageURL = data[2];
+        this.plot = data[3];
+        this.voteAverage = Double.parseDouble(data[4]);
+        this.releaseDate = data[5];
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeStringArray(new String [] {this.movieId, this.movieTitle, this.posterImageURL,
+                                                this.plot, String.valueOf(this.voteAverage), this.releaseDate});
+    }
+
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+
+    };
 }

@@ -7,19 +7,20 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -65,13 +66,22 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies, moviesPostersGridView, isTablet);
-            // build URI (get by popularity first) as it's the default
-            apiUrl = getUrl(sortCriteria);
+            if(savedInstanceState != null){
+                Parcelable[] parcelableArray = savedInstanceState.getParcelableArray(Constants.MOVIE_ARRAY_PARCELABLE);
+                movies.clear();
+                for(Parcelable movie: parcelableArray){
+                    movies.add((Movie)movie);
+                }
+            }else{
+                IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies, moviesPostersGridView, isTablet);
+                // build URI (get by popularity first) as it's the default
+                apiUrl = getUrl(sortCriteria);
 
-            // fetch from API call
-            DoAPICall apiCall = new DoAPICall(moviesList);
-            executeApiCall(apiCall);
+                // fetch from API call
+                DoAPICall apiCall = new DoAPICall(moviesList);
+                executeApiCall(apiCall);
+            }
+
         }
         else{
             setContentView(R.layout.no_connection);
@@ -188,4 +198,15 @@ public class MainActivity extends AppCompatActivity {
 
         startActivity(detailIntent);
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if(movies.size() > 0){
+            Movie [] moviesArray = movies.toArray(new Movie[movies.size()]);
+            outState.putParcelableArray(Constants.MOVIE_ARRAY_PARCELABLE, moviesArray);
+            super.onSaveInstanceState(outState);
+        }
+    }
+
+
 }
