@@ -15,7 +15,5 @@
     <string name="content">Content</string>
     <string name="emptyFav">No Favourite Movies Found</string>
     <string name="title_activity_favourite_movies">FavouriteMovies</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="noConnection">No Internet Connection Found</string>
 </resources>

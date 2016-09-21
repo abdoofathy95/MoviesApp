@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.net.MalformedURLException;
@@ -29,46 +30,52 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private boolean isTablet;
     private GridView moviesPostersGridView;
+    private boolean networkAvailable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        // check database for movies
-        isTablet = getResources().getBoolean(R.bool.isTablet);
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String sortCriteria = prefs.getString(getString(R.string.pref_sort_criteria_key),getString(R.string.pref_sort_criteria_default));
+        networkAvailable = isNetworkAvailable(this);
+        if(networkAvailable) {
+            setContentView(R.layout.activity_main);
+            // check database for movies
+            isTablet = getResources().getBoolean(R.bool.isTablet);
+            prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            String sortCriteria = prefs.getString(getString(R.string.pref_sort_criteria_key), getString(R.string.pref_sort_criteria_default));
 
-        movies = new ArrayList<>(); // data model
-        moviesPostersGridView = (GridView) findViewById(R.id.postersGridView);
-        imageAdapter = new ImageAdapter(this, movies);
-        moviesPostersGridView.setAdapter(imageAdapter);
-        context = this;
+            movies = new ArrayList<>(); // data model
+            moviesPostersGridView = (GridView) findViewById(R.id.postersGridView);
+            imageAdapter = new ImageAdapter(this, movies);
+            moviesPostersGridView.setAdapter(imageAdapter);
+            context = this;
 
-        moviesPostersGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Movie movie = (Movie) adapterView.getItemAtPosition(i);
+            moviesPostersGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Movie movie = (Movie) adapterView.getItemAtPosition(i);
 
-                if(isTablet){ // check if two pane is to be applied
-                    moviesPostersGridView.smoothScrollToPositionFromTop(i,0);
-                    openMovieInFragment(movie);
-                }else {
+                    if (isTablet) { // check if two pane is to be applied
+                        moviesPostersGridView.smoothScrollToPositionFromTop(i, 0);
+                        openMovieInFragment(movie);
+                    } else {
 
-                    // open an explicit intent (Movie Detail Activity) and send data with it'
-                    openMovieInActivity(movie);
+                        // open an explicit intent (Movie Detail Activity) and send data with it'
+                        openMovieInActivity(movie);
+                    }
                 }
-            }
-        });
+            });
 
-        IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies, moviesPostersGridView, isTablet);
-        // build URI (get by popularity first) as it's the default
-        apiUrl = getUrl(sortCriteria);
+            IOnDataReady moviesList = new MoviesList(this, imageAdapter, movies, moviesPostersGridView, isTablet);
+            // build URI (get by popularity first) as it's the default
+            apiUrl = getUrl(sortCriteria);
 
-        // fetch from API call
-        DoAPICall apiCall = new DoAPICall(moviesList);
-        executeApiCall(apiCall);
-
+            // fetch from API call
+            DoAPICall apiCall = new DoAPICall(moviesList);
+            executeApiCall(apiCall);
+        }
+        else{
+            setContentView(R.layout.no_connection);
+        }
     }
 
 
@@ -137,27 +144,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void executeApiCall(DoAPICall apiCall){
-         if(isNetworkAvailable(this)){
+         if(networkAvailable){
             apiCall.execute(apiUrl);
         }else{
-            Toast.makeText(this,"No Internet Connection Found, Please Connect to Proceed", Toast.LENGTH_LONG).show();
-            finish();
-        }
+             setContentView(R.layout.no_connection);
+         }
     }
 
-    public boolean isNetworkAvailable(Context context)
+    private boolean isNetworkAvailable(Context context)
     {
         ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnectedOrConnecting()&& cm.getActiveNetworkInfo().isAvailable()&&
-                cm.getActiveNetworkInfo().isConnected())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return netInfo != null && netInfo.isConnectedOrConnecting()&& cm.getActiveNetworkInfo().isAvailable()&&
+                cm.getActiveNetworkInfo().isConnected();
     }
 
     private void openMovieInFragment(Movie movie){
